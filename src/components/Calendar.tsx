@@ -1,8 +1,10 @@
 import {
+  addMonths,
   eachDayOfInterval,
   endOfDay,
   endOfMonth,
   endOfWeek,
+  format,
   isBefore,
   isSameMonth,
   isToday,
@@ -24,15 +26,26 @@ const Calendar = () => {
     });
   }, [selectedMonth]);
 
+  const showPreviousMonth = () => {
+    setSelectedMonth((currentMonth) => {
+      return addMonths(currentMonth, - 1)
+    })
+  }
+  const showNextMonth = () => {
+    setSelectedMonth((currentMonth) => {
+      return addMonths(currentMonth, 1)
+    })
+  }
+
   return (
     <div className='calendar'>
       <div className='header'>
-        <button className='btn'>Today</button>
+        <button onClick={() => setSelectedMonth(new Date())} className='btn'>Today</button>
         <div>
-          <button className='month-change-btn'>&lt;</button>
-          <button className='month-change-btn'>&gt;</button>
+          <button onClick={showPreviousMonth} className='month-change-btn'>&lt;</button>
+          <button onClick={showNextMonth} className='month-change-btn'>&gt;</button>
         </div>
-        <span className='month-title'>June 2023</span>
+        <span className='month-title'>{format(selectedMonth, 'MMMM yyyy')}</span>
       </div>
       <div className='days'>
         {calendarDays.map((day, index) => (
