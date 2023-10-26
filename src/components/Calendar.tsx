@@ -4,12 +4,12 @@ import {
   endOfDay,
   endOfMonth,
   endOfWeek,
-  format,
   isBefore,
   isSameMonth,
   isToday,
   startOfMonth,
   startOfWeek,
+  subMonths,
 } from "date-fns";
 import { useMemo, useState } from "react";
 import { formatDate } from "../utils/formatDate";
@@ -26,26 +26,16 @@ const Calendar = () => {
     });
   }, [selectedMonth]);
 
-  const showPreviousMonth = () => {
-    setSelectedMonth((currentMonth) => {
-      return addMonths(currentMonth, - 1)
-    })
-  }
-  const showNextMonth = () => {
-    setSelectedMonth((currentMonth) => {
-      return addMonths(currentMonth, 1)
-    })
-  }
 
   return (
     <div className='calendar'>
       <div className='header'>
         <button onClick={() => setSelectedMonth(new Date())} className='btn'>Today</button>
         <div>
-          <button onClick={showPreviousMonth} className='month-change-btn'>&lt;</button>
-          <button onClick={showNextMonth} className='month-change-btn'>&gt;</button>
+          <button onClick={() => setSelectedMonth(c => subMonths(c, 1))} className='month-change-btn'>&lt;</button>
+          <button onClick={() => setSelectedMonth(c => addMonths(c, 1))} className='month-change-btn'>&gt;</button>
         </div>
-        <span className='month-title'>{format(selectedMonth, 'MMMM yyyy')}</span>
+        <span className='month-title'>{formatDate(selectedMonth, {month: "long", year: "numeric"})}</span>
       </div>
       <div className='days'>
         {calendarDays.map((day, index) => (
