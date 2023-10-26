@@ -6,11 +6,12 @@ import {
   startOfWeek,
 } from "date-fns";
 import { useMemo, useState } from "react";
+import { formatDate } from "../utils/formatDate";
 
 const Calendar = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const weekStart = startOfWeek(startOfMonth(selectedMonth));
-  const weekEnd = endOfWeek(endOfMonth(selectedMonth));
+  const weekStart = startOfWeek(startOfMonth(selectedMonth), { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(endOfMonth(selectedMonth), { weekStartsOn: 1 });
   const calendarDays = useMemo(() => {
     return eachDayOfInterval({
       start: weekStart,
@@ -57,8 +58,8 @@ const CalendarDay = ({
   return (
     <div className='day non-month-day old-month-day'>
       <div className='day-header'>
-        <div className='week-name'>Sun</div>
-        <div className='day-number'>28</div>
+        {showWeekName && <div className='week-name'>{formatDate(day, {weekday: "short"})}</div>}
+        <div className='day-number'>{formatDate(day, {day: "numeric"})}</div>
         <button className='add-event-btn'>+</button>
       </div>
       {/* <div className="events">
