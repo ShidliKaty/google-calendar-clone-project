@@ -1,12 +1,17 @@
 import {
   eachDayOfInterval,
+  endOfDay,
   endOfMonth,
   endOfWeek,
+  isBefore,
+  isSameMonth,
+  isToday,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
 import { useMemo, useState } from "react";
 import { formatDate } from "../utils/formatDate";
+import { cc } from "../utils/cc";
 
 const Calendar = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -56,10 +61,10 @@ const CalendarDay = ({
   selectedMonth,
 }: CalendatDayProps) => {
   return (
-    <div className='day non-month-day old-month-day'>
+    <div className={cc('day', !isSameMonth(day, selectedMonth) && 'non-month-day', isBefore(endOfDay(day), new Date) && 'old-month-day')}>
       <div className='day-header'>
         {showWeekName && <div className='week-name'>{formatDate(day, {weekday: "short"})}</div>}
-        <div className='day-number'>{formatDate(day, {day: "numeric"})}</div>
+        <div className={cc('day-number', isToday(day) && 'today')}>{formatDate(day, {day: "numeric"})}</div>
         <button className='add-event-btn'>+</button>
       </div>
       {/* <div className="events">
