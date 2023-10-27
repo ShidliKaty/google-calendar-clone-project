@@ -1,76 +1,120 @@
 import {
-  addMonths,
-  eachDayOfInterval,
-  endOfDay,
-  endOfMonth,
-  endOfWeek,
-  isBefore,
-  isSameMonth,
-  isToday,
-  startOfMonth,
-  startOfWeek,
-  subMonths,
-} from "date-fns";
-import { useMemo, useState } from "react";
-import { formatDate } from "../utils/formatDate";
-import { cc } from "../utils/cc";
+    addMonths,
+    eachDayOfInterval,
+    endOfDay,
+    endOfMonth,
+    endOfWeek,
+    isBefore,
+    isSameMonth,
+    isToday,
+    startOfMonth,
+    startOfWeek,
+    subMonths,
+} from 'date-fns';
+import { useMemo, useState } from 'react';
+import { formatDate } from '../utils/formatDate';
+import { cc } from '../utils/cc';
+import EventFormModal from './EventFormModal';
+import { useEvents } from '../context/useEvents';
 
 const Calendar = () => {
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const weekStart = startOfWeek(startOfMonth(selectedMonth), { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(endOfMonth(selectedMonth), { weekStartsOn: 1 });
-  const calendarDays = useMemo(() => {
-    return eachDayOfInterval({
-      start: weekStart,
-      end: weekEnd,
-    });
-  }, [selectedMonth]);
+    const [selectedMonth, setSelectedMonth] = useState(new Date());
+    const calendarDays = useMemo(() => {
+        const weekStart = startOfWeek(startOfMonth(selectedMonth), {
+            weekStartsOn: 1,
+        });
+        const weekEnd = endOfWeek(endOfMonth(selectedMonth), {
+            weekStartsOn: 1,
+        });
+        return eachDayOfInterval({
+            start: weekStart,
+            end: weekEnd,
+        });
+    }, [selectedMonth]);
 
-
-  return (
-    <div className='calendar'>
-      <div className='header'>
-        <button onClick={() => setSelectedMonth(new Date())} className='btn'>Today</button>
-        <div>
-          <button onClick={() => setSelectedMonth(c => subMonths(c, 1))} className='month-change-btn'>&lt;</button>
-          <button onClick={() => setSelectedMonth(c => addMonths(c, 1))} className='month-change-btn'>&gt;</button>
+    return (
+        <div className="calendar">
+            <div className="header">
+                <button
+                    onClick={() => setSelectedMonth(new Date())}
+                    className="btn"
+                >
+                    Today
+                </button>
+                <div>
+                    <button
+                        onClick={() => setSelectedMonth(c => subMonths(c, 1))}
+                        className="month-change-btn"
+                    >
+                        &lt;
+                    </button>
+                    <button
+                        onClick={() => setSelectedMonth(c => addMonths(c, 1))}
+                        className="month-change-btn"
+                    >
+                        &gt;
+                    </button>
+                </div>
+                <span className="month-title">
+                    {formatDate(selectedMonth, {
+                        month: 'long',
+                        year: 'numeric',
+                    })}
+                </span>
+            </div>
+            <div className="days">
+                {calendarDays.map((day, index) => (
+                    <CalendarDay
+                        key={day.getTime()}
+                        day={day}
+                        showWeekName={index < 7}
+                        selectedMonth={selectedMonth}
+                    />
+                ))}
+            </div>
         </div>
-        <span className='month-title'>{formatDate(selectedMonth, {month: "long", year: "numeric"})}</span>
-      </div>
-      <div className='days'>
-        {calendarDays.map((day, index) => (
-          <CalendarDay
-            key={day.getTime()}
-            day={day}
-            showWeekName={index < 7}
-            selectedMonth={selectedMonth}
-          />
-        ))}
-      </div>
-    </div>
-  );
+    );
 };
 
 type CalendatDayProps = {
-  day: Date;
-  showWeekName: boolean;
-  selectedMonth: Date;
+    day: Date;
+    showWeekName: boolean;
+    selectedMonth: Date;
 };
 
-
 const CalendarDay = ({
-  day,
-  showWeekName,
-  selectedMonth,
+    day,
+    showWeekName,
+    selectedMonth,
 }: CalendatDayProps) => {
-  return (
-    <div className={cc('day', !isSameMonth(day, selectedMonth) && 'non-month-day', isBefore(endOfDay(day), new Date) && 'old-month-day')}>
-      <div className='day-header'>
-        {showWeekName && <div className='week-name'>{formatDate(day, {weekday: "short"})}</div>}
-        <div className={cc('day-number', isToday(day) && 'today')}>{formatDate(day, {day: "numeric"})}</div>
-        <button className='add-event-btn'>+</button>
-      </div>
-      {/* <div className="events">
+    const { addEvent } = useEvents();
+    const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
+
+    return (
+        <div
+            className={cc(
+                'day',
+                !isSameMonth(day, selectedMonth) && 'non-month-day',
+                isBefore(endOfDay(day), new Date()) && 'old-month-day',
+            )}
+        >
+            <div className="day-header">
+                {showWeekName && (
+                    <div className="week-name">
+                        {formatDate(day, { weekday: 'short' })}
+                    </div>
+                )}
+                <div className={cc('day-number', isToday(day) && 'today')}>
+                    {formatDate(day, { day: 'numeric' })}
+                </div>
+                <button
+                    className="add-event-btn"
+                    onClick={() => setIsNewEventModalOpen(true)}
+                >
+                    +
+                </button>
+            </div>
+            {/* <div className="events">
           <button className="all-day-event blue event">
             <div className="event-name">Short</div>
           </button>
@@ -85,8 +129,14 @@ const CalendarDay = ({
             <div className="event-name">Event Name</div>
           </button>
         </div> */}
-    </div>
-  );
+            <EventFormModal
+                date={day}
+                isOpen={isNewEventModalOpen}
+                onClose={() => setIsNewEventModalOpen(false)}
+                onSubmit={addEvent}
+            />
+        </div>
+    );
 };
 
 export default Calendar;
