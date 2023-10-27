@@ -5,6 +5,7 @@ import {
     endOfMonth,
     endOfWeek,
     isBefore,
+    isSameDay,
     isSameMonth,
     isToday,
     startOfMonth,
@@ -16,6 +17,8 @@ import { formatDate } from '../utils/formatDate';
 import { cc } from '../utils/cc';
 import EventFormModal from './EventFormModal';
 import { useEvents } from '../context/useEvents';
+import { Event } from '../context/Events';
+import CalendarEvent from './CalendarEvent';
 
 const Calendar = () => {
     const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -31,6 +34,8 @@ const Calendar = () => {
             end: weekEnd,
         });
     }, [selectedMonth]);
+
+    const { events } = useEvents();
 
     return (
         <div className="calendar">
@@ -69,6 +74,9 @@ const Calendar = () => {
                         day={day}
                         showWeekName={index < 7}
                         selectedMonth={selectedMonth}
+                        events={events.filter(event =>
+                            isSameDay(day, event.date),
+                        )}
                     />
                 ))}
             </div>
@@ -80,15 +88,34 @@ type CalendatDayProps = {
     day: Date;
     showWeekName: boolean;
     selectedMonth: Date;
+    events: Event[];
 };
 
 const CalendarDay = ({
     day,
     showWeekName,
     selectedMonth,
+    events,
 }: CalendatDayProps) => {
     const { addEvent } = useEvents();
     const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
+
+    const sortedEvents = useMemo(() => {
+        const timeToNumber = (time: string) =>
+            parseFloat(time.replace(':', '.'));
+
+        return [...events].sort((a, b) => {
+            if (a.allDay && b.allDay) {
+                return 0;
+            } else if (a.allDay) {
+                return -1;
+            } else if (b.allDay) {
+                return 1;
+            } else {
+                return timeToNumber(a.startTime) - timeToNumber(b.startTime);
+            }
+        });
+    }, [events]);
 
     return (
         <div
@@ -114,21 +141,13 @@ const CalendarDay = ({
                     +
                 </button>
             </div>
-            {/* <div className="events">
-          <button className="all-day-event blue event">
-            <div className="event-name">Short</div>
-          </button>
-          <button className="all-day-event green event">
-            <div className="event-name">
-              Long Event Name That Just Keeps Going
-            </div>
-          </button>
-          <button className="event">
-            <div className="color-dot blue"></div>
-            <div className="event-time">7am</div>
-            <div className="event-name">Event Name</div>
-          </button>
-        </div> */}
+            {events.length > 0 && (
+                <div className="events">
+                    {sortedEvents.map(event => (
+                        <CalendarEvent key={event.id} event={event} />
+                    ))}
+                </div>
+            )}
             <EventFormModal
                 date={day}
                 isOpen={isNewEventModalOpen}
