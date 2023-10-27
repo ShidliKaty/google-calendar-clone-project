@@ -2,7 +2,7 @@ import { Event } from '../context/Events';
 import { UnionOmit } from '../utils/types';
 import Modal, { ModalProps } from './Modal';
 import { formatDate } from '../utils/formatDate';
-import { Fragment, useId, useState } from 'react';
+import { FormEvent, Fragment, useId, useRef, useState } from 'react';
 import { EVENT_COLORS } from '../context/useEvents';
 
 type EventFormModalProps = {
@@ -33,6 +33,49 @@ const EventFormModal = ({
         event?.allDay || false,
     );
     const [startTime, setStartTime] = useState(event?.startTime || '');
+    const endTimeRef = useRef<HTMLInputElement>(null);
+    const nameRef = useRef<HTMLInputElement>(null);
+
+    function handleSubmit(e: FormEvent) {
+        e.preventDefault();
+
+        const name = nameRef.current?.value;
+        const endTime = endTimeRef.current?.value;
+
+        if (name == null || name === '') return;
+
+        const commonProps = {
+            name,
+            date: date || event?.date,
+            color: selectedColor,
+        };
+
+        let newEvent: UnionOmit<Event, 'id'>;
+
+        if (isAllDayChecked) {
+            newEvent = {
+                ...commonProps,
+                allDay: true,
+            };
+        } else {
+            if (
+                startTime == null ||
+                startTime === '' ||
+                endTime == null ||
+                endTime === ''
+            )
+                return;
+            newEvent = {
+                ...commonProps,
+                allDay: false,
+                startTime,
+                endTime,
+            };
+        }
+
+        modalProps.onClose();
+        onSubmit(newEvent);
+    }
     return (
         <Modal {...modalProps}>
             <div className="modal-title">
@@ -44,10 +87,15 @@ const EventFormModal = ({
                     &times;
                 </button>
             </div>
-            <form>
+            <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor={`${formId}-name`}>Name</label>
-                    <input required type="text" id={`${formId}-name`} />
+                    <input
+                        ref={nameRef}
+                        required
+                        type="text"
+                        id={`${formId}-name`}
+                    />
                 </div>
                 <div className="form-group checkbox">
                     <input
@@ -75,6 +123,7 @@ const EventFormModal = ({
                     <div className="form-group">
                         <label htmlFor={`${formId}-end-time`}>End Time</label>
                         <input
+                            ref={endTimeRef}
                             min={startTime}
                             required={!isAllDayChecked}
                             disabled={isAllDayChecked}
