@@ -91,6 +91,7 @@ const EventFormModal = ({
                 <div className="form-group">
                     <label htmlFor={`${formId}-name`}>Name</label>
                     <input
+                        defaultValue={event?.name}
                         ref={nameRef}
                         required
                         type="text"
@@ -124,6 +125,7 @@ const EventFormModal = ({
                         <label htmlFor={`${formId}-end-time`}>End Time</label>
                         <input
                             ref={endTimeRef}
+                            defaultValue={event?.endTime}
                             min={startTime}
                             required={!isAllDayChecked}
                             disabled={isAllDayChecked}
